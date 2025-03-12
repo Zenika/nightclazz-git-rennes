@@ -1,16 +1,20 @@
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.IOException;
+import java.util.zip.DataFormatException;
 
 public class GitImpl {
 
-    private final static String SHA_1 = "95d09f2b10159347eece71399a7e2e907ea3df4f";
     private final static String GIT_FOLDER = ".git";
 
-    public static void sha1() {
+    public static File sha1(String sha1) throws IOException, DataFormatException {
 
         File gitTrouve = findGit(new File(".").getAbsoluteFile());
         System.out.println("dossier .git trouvé : "+ gitTrouve);
+
+        var objectsFolder = new File(gitTrouve,  GIT_FOLDER + "/objects");
+        var intermediateFolder = new File(objectsFolder, sha1.substring(0, 2));
+
+        return new File(intermediateFolder, sha1.substring(2));
     }
 
     private static File findGit(File git) {
