@@ -3,6 +3,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 import java.util.zip.InflaterInputStream;
 
@@ -74,6 +75,13 @@ public class GitImpl {
         return result;
     }
 
+    public static GitCommit parseCommit(GitFile file){
+        var content = splitByteArray(file.content(), new byte[]{(byte) '\n', (byte) '\n'}, 1);
+        var header = splitByteArray(content.getFirst(), (byte) '\n', Integer.MAX_VALUE);
+        return new GitCommit( header.stream().map(e -> splitByteArray(e, (byte) ' ', 1))
+                .collect(Collectors.toMap(e -> stringFromByte(e.getFirst()), e -> stringFromByte(e.getLast()))), stringFromByte(content.getLast()));
+    }
+
     private static GitTreeEntry parseTreeEntry(byte[] entry){
         var content = splitByteArray(entry, (byte) 0, 1);
         var header = splitByteArray(content.getFirst(), (byte) ' ', 1);
@@ -95,12 +103,21 @@ public class GitImpl {
     }
 
     private static List<byte[]> splitByteArray(byte[] array, byte delimiter, int limit){
+        return splitByteArray(array, new byte[]{delimiter}, limit);
+    }
+
+    private static List<byte[]> splitByteArray(byte[] array, byte[] delimiter, int limit){
         ArrayList<byte[]> result = new ArrayList<>();
+        int delimiterLength = delimiter.length;
         int lastSplit = 0;
-        for(int i = 0; i < array.length; i++){
-            if(array[i] == delimiter){
+        for(int i = 0; i < array.length - delimiterLength; i++){
+            boolean found = true;
+            for(int j = 0; j < delimiterLength; j++){
+                found &= array[i + j] == delimiter[j];
+            }
+            if(found){
                 result.add(Arrays.copyOfRange(array, lastSplit, i));
-                lastSplit = i+1;
+                lastSplit = i + delimiterLength;
                 if(result.size() == limit){
                     break;
                 }
