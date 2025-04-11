@@ -20,10 +20,11 @@ public class Main {
             System.out.println(new String(content, StandardCharsets.UTF_8));
 
             System.out.println();
-            System.out.println("Contenu des fichirs");
+            System.out.println("Contenu des fichiers");
             System.out.println(GitImpl.readContent(content)); // ~10min - 15min
 
-            System.out.println();
+            System.out.println("Parsing de tree");
+            GitImpl.parseTree(GitImpl.readContent(GitImpl.contentSha1(GitImpl.sha1(SHA_1_TREE))));
         } catch (IOException | DataFormatException e) {
             // oh snap !
             throw new RuntimeException(e);

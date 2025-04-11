@@ -1,4 +1,5 @@
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -61,6 +62,38 @@ public class GitImpl {
         return new GitFile(GitFile.Type.parse(header.getFirst()), dataLen, content.getLast());
     }
 
+    public static List<GitTreeEntry> parseTree(GitFile file){
+        List<GitTreeEntry> result = new ArrayList<>();
+        int start = 0;
+        while (start < file.content().length){
+            var separatorIndex = findIndex(file.content(), (byte) 0, start);
+            var entryEnd = separatorIndex + 21;
+            result.add(parseTreeEntry(Arrays.copyOfRange(file.content(), start, entryEnd)));
+            start = entryEnd;
+        }
+        return result;
+    }
+
+    private static GitTreeEntry parseTreeEntry(byte[] entry){
+        var content = splitByteArray(entry, (byte) 0, 1);
+        var header = splitByteArray(content.getFirst(), (byte) ' ', 1);
+        return new GitTreeEntry(stringFromByte(header.getFirst()), stringFromByte(header.getLast()), hexFromByte(content.getLast()));
+    }
+
+    private static String stringFromByte(byte[] bytes){
+        return new String(bytes, StandardCharsets.UTF_8);
+    }
+
+    public static String hexFromByte(byte[] bytes) {
+        StringBuilder result = new StringBuilder();
+        for (byte aByte : bytes) {
+            result.append(String.format("%02x", aByte));
+            // upper case
+            // result.append(String.format("%02X", aByte));
+        }
+        return result.toString();
+    }
+
     private static List<byte[]> splitByteArray(byte[] array, byte delimiter, int limit){
         ArrayList<byte[]> result = new ArrayList<>();
         int lastSplit = 0;
@@ -75,5 +108,14 @@ public class GitImpl {
         }
         result.add(Arrays.copyOfRange(array, lastSplit, array.length));
         return result;
+    }
+
+    private static int findIndex(byte[] array, byte element, int start){
+        for(int i = start; i < array.length; i++){
+            if(array[i] == element){
+                return i;
+            }
+        }
+        return -1;
     }
 }
