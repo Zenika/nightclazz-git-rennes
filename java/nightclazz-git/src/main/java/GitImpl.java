@@ -1,7 +1,8 @@
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.zip.DataFormatException;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
 public class GitImpl {
@@ -19,13 +20,10 @@ public class GitImpl {
         return new File(intermediateFolder, sha1.substring(2));
     }
 
-    public static String contentSha1(File sha1) throws IOException, DataFormatException {
+    public static byte[] contentSha1(File sha1) throws IOException, DataFormatException {
         var bytesGit = fileToByte(sha1);
 
-        String decompress = decompress(bytesGit);
-
-        System.out.println("fichier décompressé : " + decompress);
-        return decompress;
+        return decompress(bytesGit);
     }
 
     private static byte[] fileToByte(File git) throws IOException {
@@ -36,11 +34,11 @@ public class GitImpl {
         return byteArray;
     }
 
-    private static String decompress(byte[] input) throws IOException {
+    private static byte[] decompress(byte[] input) throws IOException {
 
         ByteArrayInputStream inputStream = new ByteArrayInputStream(input);
         InflaterInputStream inflater = new InflaterInputStream(inputStream);
-        return new String(inflater.readAllBytes());
+        return inflater.readAllBytes();
     }
 
     private static File findGit(File git) {
@@ -53,14 +51,29 @@ public class GitImpl {
         }
     }
 
-    public static GitFile readContent(String content) {
-        String[] split = content.split("\\x00");
-        String[] header = split[0].split(" ");
-        int size = Integer.parseInt(header[1]);
-        String contentFile = split[1];
-        if(size != contentFile.length()) {
-            throw new IllegalArgumentException("Size not matching");
+    public static GitFile readContent(byte[] file) throws DataFormatException, IOException {
+        var content = splitByteArray(file, (byte) 0, 1);
+        var header = splitByteArray(content.getFirst(), (byte) ' ', 1);
+        int dataLen = Integer.parseInt(new String(header.getLast()));
+        if(dataLen != content.getLast().length){
+            throw new RuntimeException("Size not matching, got " + content.getLast().length + ", expected ");
         }
-        return new GitFile(GitFile.Type.parse(header[0]), size, contentFile);
+        return new GitFile(GitFile.Type.parse(header.getFirst()), dataLen, content.getLast());
+    }
+
+    private static List<byte[]> splitByteArray(byte[] array, byte delimiter, int limit){
+        ArrayList<byte[]> result = new ArrayList<>();
+        int lastSplit = 0;
+        for(int i = 0; i < array.length; i++){
+            if(array[i] == delimiter){
+                result.add(Arrays.copyOfRange(array, lastSplit, i));
+                lastSplit = i+1;
+                if(result.size() == limit){
+                    break;
+                }
+            }
+        }
+        result.add(Arrays.copyOfRange(array, lastSplit, array.length));
+        return result;
     }
 }

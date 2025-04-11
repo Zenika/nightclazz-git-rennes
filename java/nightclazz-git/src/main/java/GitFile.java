@@ -1,4 +1,6 @@
-public record GitFile(Type type, int size, String content) {
+import java.nio.charset.StandardCharsets;
+
+public record GitFile(Type type, int size, byte[] content) {
 
     public enum Type{
         BLOB("blob"),
@@ -18,6 +20,10 @@ public record GitFile(Type type, int size, String content) {
                 }
             }
             throw new IllegalArgumentException("Wrong git file type");
+        }
+
+        public static Type parse(byte[] name){
+            return parse(new String(name, StandardCharsets.UTF_8));
         }
     }
 }
