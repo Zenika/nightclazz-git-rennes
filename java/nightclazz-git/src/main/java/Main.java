@@ -13,27 +13,26 @@ public class Main {
     public static void main(String[] args) {
         try {
             System.out.println("Récupération du path d'un fichier via son sha1 :"); // 30 - 45min
-            File objectPath = GitImpl.sha1(SHA_1_BLOB);
+            File objectPath = GitImpl.gitObjectPath(SHA_1_BLOB);
             System.out.println(objectPath);
 
             System.out.println();
             System.out.println("Récupération du contenu d'un fichier via son sha1"); // 30 - 45min
-            var content = GitImpl.contentSha1(objectPath);
+            var content = GitImpl.uncompressObject(SHA_1_BLOB);
             System.out.println(new String(content, StandardCharsets.UTF_8));
 
             System.out.println();
             System.out.println("Contenu des fichiers");
-            System.out.println(GitImpl.readContent(content)); // ~10min - 15min
+            System.out.println(GitImpl.readContent(SHA_1_BLOB)); // ~10min - 15min
 
             System.out.println("Parsing de tree");
-            List<GitTreeEntry> gitTreeEntries = GitImpl.parseTree(GitImpl.readContent(GitImpl.contentSha1(GitImpl.sha1(SHA_1_TREE))));
+            List<GitTreeEntry> gitTreeEntries = GitImpl.parseTree(GitImpl.readContent(SHA_1_TREE));
             System.out.println(gitTreeEntries);
 
             System.out.println("Parsing de commit");
-            GitCommit gitCommit = GitImpl.parseCommit(GitImpl.readContent(GitImpl.contentSha1(GitImpl.sha1(SHA_1_COMMIT))));
+            GitCommit gitCommit = GitImpl.parseCommit(GitImpl.readContent(SHA_1_COMMIT));
             System.out.println(gitCommit);
         } catch (IOException | DataFormatException e) {
-            // oh snap !
             throw new RuntimeException(e);
         }
     }
