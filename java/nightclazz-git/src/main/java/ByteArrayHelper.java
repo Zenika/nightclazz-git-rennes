@@ -1,3 +1,4 @@
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,5 +36,17 @@ public class ByteArrayHelper {
             }
         }
         return -1;
+    }
+
+    public static String hexFromByte(byte[] bytes) {
+        StringBuilder result = new StringBuilder();
+        for (byte aByte : bytes) {
+            result.append(String.format("%02x", aByte));
+        }
+        return result.toString();
+    }
+
+    static String stringFromByte(byte[] bytes){
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 }
