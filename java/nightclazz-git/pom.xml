@@ -9,4 +9,12 @@
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
   </properties>
+  <dependencies>
+    <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on -->
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk18on</artifactId>
+      <version>1.80</version>
+    </dependency>
+  </dependencies>
 </project>
