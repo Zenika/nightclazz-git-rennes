@@ -14,6 +14,11 @@ public class Main {
             File objectPath = GitImpl.gitObjectPath(SHA_1_BLOB);
             System.out.println(objectPath);
 
+            System.out.println();
+            System.out.println("Récupération du contenu d'un fichier via son sha1"); // 30 - 45min
+            var content = GitImpl.uncompressObject(SHA_1_BLOB);
+            System.out.println(new String(content, StandardCharsets.UTF_8));
+
         } catch (IOException | DataFormatException e) {
             throw new RuntimeException(e);
         }
