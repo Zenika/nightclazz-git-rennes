@@ -80,3 +80,25 @@ def parse_tree(sha1 : str) -> list:
     start = end
 
   return entries
+
+
+def parse_commit_header(raw: bytes) -> dict[str, str]:
+  lines = raw.split(b"\n")
+
+  header_split = [line.split(b" ", maxsplit = 1) for line in lines]
+  return {name.decode("utf-8"): value.decode("utf-8") for name, value in header_split}
+
+
+def parse_commit(sha1: str) -> dict[str, str]:
+  type, data = get_object(sha1)
+  assert type == b"commit"
+
+  raw_header, message = data.split(b"\n\n")
+  commit = parse_commit_header(raw_header)
+  commit["message"] = message.decode("utf-8")
+  return commit
+
+
+print(get_object(SHA1_BLOB))
+print(parse_tree(SHA1_TREE))
+print(parse_commit(SHA1_COMMIT))
