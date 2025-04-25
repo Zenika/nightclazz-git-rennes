@@ -55,4 +55,15 @@ public class GitImpl {
         InflaterInputStream inflater = new InflaterInputStream(inputStream);
         return inflater.readAllBytes();
     }
+
+    public static GitFile readContent(String sha1) throws DataFormatException, IOException {
+        byte[] fileData = uncompressObject(sha1);
+        List<byte[]> content = ByteArrayHelper.splitByteArray(fileData, (byte) 0, 1);
+        List<byte[]> header = ByteArrayHelper.splitByteArray(content.getFirst(), (byte) ' ', 1);
+        int dataLen = Integer.parseInt(new String(header.getLast()));
+        if(dataLen != content.getLast().length){
+            throw new RuntimeException("Size not matching, got " + content.getLast().length + ", expected ");
+        }
+        return new GitFile(GitFile.Type.parse(header.getFirst()), dataLen, content.getLast());
+    }
 }

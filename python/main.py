@@ -46,3 +46,11 @@ def uncompress_object(sha1: str) -> bytes:
       return decompress(f.read())
   except IOError:
     raise Exception(f"fatal : {sha1}  is not a git object")
+  
+
+def get_object(sha1 : str) :
+  header, data = uncompress_object(sha1).split(b"\x00", maxsplit=1)
+  object_type, size = header.split()
+  assert len(data) == int(size), "Unexpected object length"
+
+  return object_type, data
