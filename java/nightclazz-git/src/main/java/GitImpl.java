@@ -84,4 +84,21 @@ public class GitImpl {
         List<byte[]> header = ByteArrayHelper.splitByteArray(content.getFirst(), (byte) ' ', 1);
         return new GitTreeEntry(ByteArrayHelper.stringFromByte(header.getFirst()), ByteArrayHelper.stringFromByte(header.getLast()), ByteArrayHelper.hexFromByte(content.getLast()));
     }
+
+    public static GitCommit parseCommit(GitFile file){
+        List<byte[]> content = ByteArrayHelper.splitByteArray(file.content(), new byte[]{(byte) '\n', (byte) '\n'}, 1);
+        if(content.size() != 2){
+            throw new IllegalArgumentException("Commit doesn't have a message");
+        }
+        List<byte[]> header = ByteArrayHelper.splitByteArray(content.getFirst(), (byte) '\n', Integer.MAX_VALUE);
+        return new GitCommit(
+                header.stream()
+                        .map(e -> ByteArrayHelper.splitByteArray(e, (byte) ' ', 1))
+                        .collect(Collectors.toMap(
+                                e -> ByteArrayHelper.stringFromByte(e.getFirst()),
+                                e -> ByteArrayHelper.stringFromByte(e.getLast())
+                        )),
+                ByteArrayHelper.stringFromByte(content.getLast())
+        );
+    }
 }
