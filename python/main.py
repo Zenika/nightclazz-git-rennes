@@ -54,3 +54,29 @@ def get_object(sha1 : str) :
   assert len(data) == int(size), "Unexpected object length"
 
   return object_type, data
+
+
+def parse_tree_entry(raw_bytes: bytes) -> tuple[str, str, str, str]:
+  info, bin_sha1 = raw_bytes.split(b"\x00", maxsplit= 1)
+  mode, raw_name = info.split(b" ", maxsplit=1)
+  sha1 = bin_sha1.hex()
+  type, _ = get_object(sha1)
+  name = raw_name.decode("utf-8")
+  return mode.decode("utf-8"), type.decode("utf-8"), sha1, name
+
+
+def parse_tree(sha1 : str) -> list:
+  type, data = get_object(sha1)
+  assert type == b"tree"
+  entries = []
+  start = 0
+  while True:
+    try:
+      sep_index = data.index(b"\x00", start)
+      end = sep_index + 1 + 20
+    except ValueError:
+      break
+    entries.append(parse_tree_entry(data[start:end]))
+    start = end
+
+  return entries

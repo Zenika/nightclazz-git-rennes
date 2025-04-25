@@ -66,4 +66,22 @@ public class GitImpl {
         }
         return new GitFile(GitFile.Type.parse(header.getFirst()), dataLen, content.getLast());
     }
+
+    public static List<GitTreeEntry> parseTree(GitFile file){
+        List<GitTreeEntry> result = new ArrayList<>();
+        int start = 0;
+        while (start < file.content().length){
+            int separatorIndex = ByteArrayHelper.findIndex(file.content(), (byte) 0, start);
+            int entryEnd = separatorIndex + 21;
+            result.add(parseTreeEntry(Arrays.copyOfRange(file.content(), start, entryEnd)));
+            start = entryEnd;
+        }
+        return result;
+    }
+
+    private static GitTreeEntry parseTreeEntry(byte[] entry){
+        List<byte[]> content = ByteArrayHelper.splitByteArray(entry, (byte) 0, 1);
+        List<byte[]> header = ByteArrayHelper.splitByteArray(content.getFirst(), (byte) ' ', 1);
+        return new GitTreeEntry(ByteArrayHelper.stringFromByte(header.getFirst()), ByteArrayHelper.stringFromByte(header.getLast()), ByteArrayHelper.hexFromByte(content.getLast()));
+    }
 }
