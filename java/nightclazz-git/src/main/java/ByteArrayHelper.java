@@ -29,4 +29,24 @@ public class ByteArrayHelper {
         return result;
     }
 
+    public static int findIndex(byte[] array, byte element, int start){
+        for(int i = start; i < array.length; i++){
+            if(array[i] == element){
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    static String stringFromByte(byte[] bytes){
+        return new String(bytes, StandardCharsets.UTF_8);
+    }
+
+    public static String hexFromByte(byte[] bytes) {
+        StringBuilder result = new StringBuilder();
+        for (byte aByte : bytes) {
+            result.append(String.format("%02x", aByte));
+        }
+        return result.toString();
+    }
 }
