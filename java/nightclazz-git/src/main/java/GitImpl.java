@@ -35,4 +35,24 @@ public class GitImpl {
         }
     }
 
+    public static byte[] uncompressObject(String sha1) throws IOException, DataFormatException {
+        File gitFile = gitObjectPath(sha1);
+        byte[] compressedByte = fileToByte(gitFile);
+        return uncompressArray(compressedByte);
+    }
+
+    private static byte[] fileToByte(File git) throws IOException {
+        byte[] byteArray = new byte[(int) git.length()];
+        try (FileInputStream inputStream = new FileInputStream(git)) {
+            inputStream.read(byteArray);
+        }
+        return byteArray;
+    }
+
+    private static byte[] uncompressArray(byte[] input) throws IOException {
+
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(input);
+        InflaterInputStream inflater = new InflaterInputStream(inputStream);
+        return inflater.readAllBytes();
+    }
 }

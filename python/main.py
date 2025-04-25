@@ -1,4 +1,5 @@
 from pathlib import Path
+from zlib import decompress
 from re import search
 
 GIT_DIR = ".git"
@@ -37,3 +38,11 @@ def get_object_path(sha1: str) -> Path:
 
 def is_sha1(sha1: str) -> bool:
   return bool(search(r"^[0-9a-f]{40}$", sha1))
+
+
+def uncompress_object(sha1: str) -> bytes:
+  try:
+    with get_object_path(sha1).open(mode="rb") as f:
+      return decompress(f.read())
+  except IOError:
+    raise Exception(f"fatal : {sha1}  is not a git object")
